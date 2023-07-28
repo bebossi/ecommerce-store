@@ -1,39 +1,40 @@
 "use client";
+import axios from "axios";
 import Button from "@/components/ui/Button";
 import Currency from "@/components/ui/currency";
 import useCart from "@/hooks/UseCart";
-import axios from "axios";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 
 const Summary = () => {
-    const serachParams = useSearchParams()
-    const items = useCart((state) => state.items)
-    const removeAll = useCart((state) => state.removeAll)
+  const serachParams = useSearchParams();
+  const items = useCart((state) => state.items);
+  const removeAll = useCart((state) => state.removeAll);
 
-    useEffect(() => {
-        if(serachParams.get("success")) {
-                toast.success("Payment completed.")
-                removeAll()
-    
-            }
-            if(serachParams.get("canceled")){
-                toast.error("Something went wrong")
-            }
-        }, [serachParams, removeAll])
-    
-
-    const totalPrice = items.reduce((total, item) => {
-        return total + Number(item.price)
-    }, 0)
-
-    const onCheckout = async () => {
-        const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/checkout`, {
-            productIds: items.map((item) => item.id)
-        })
-        window.location = response.data.url
+  useEffect(() => {
+    if (serachParams.get("success")) {
+      toast.success("Payment completed.");
+      removeAll();
     }
+    if (serachParams.get("canceled")) {
+      toast.error("Something went wrong");
+    }
+  }, [serachParams, removeAll]);
+
+  const totalPrice = items.reduce((total, item) => {
+    return total + Number(item.price);
+  }, 0);
+
+  const onCheckout = async () => {
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/checkout`,
+      {
+        productIds: items.map((item) => item.id),
+      }
+    );
+    window.location = response.data.url;
+  };
 
   return (
     <div className="mt-16 rounded-lg bg-gray-200 px-4 py-6 sm:p-6 lg:col-span-5 lg:mt-0 lg:p-8">
@@ -44,7 +45,7 @@ const Summary = () => {
           <Currency value={totalPrice} />
         </div>
       </div>
-      <Button onClick={onCheckout} className="w-full mt-6" >
+      <Button onClick={onCheckout} disabled={items.length === 0} className="w-full mt-6">
         Checkout
       </Button>
     </div>
